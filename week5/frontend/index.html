@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Modern Software Dev Starter</title>
     <link rel="stylesheet" href="/static/styles.css" />
+    <!-- React UMD bundles for a lightweight React setup without a bundler yet -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   </head>
   <body>
     <main>
@@ -12,12 +15,13 @@
 
       <section>
         <h2>Notes</h2>
+        <!-- React-powered notes search UI (canonical notes list) -->
+        <div id="notes-react-root"></div>
         <form id="note-form">
           <input id="note-title" placeholder="Title" required />
           <input id="note-content" placeholder="Content" required />
           <button type="submit">Add</button>
         </form>
-        <ul id="notes"></ul>
       </section>
 
       <section>
