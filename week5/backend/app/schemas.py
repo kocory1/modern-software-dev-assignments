@@ -35,6 +35,10 @@ class TagRead(BaseModel):
         from_attributes = True
 
 
+class TagAttachRequest(BaseModel):
+    tag_id: int
+
+
 class ActionItemCreate(BaseModel):
     description: str
 

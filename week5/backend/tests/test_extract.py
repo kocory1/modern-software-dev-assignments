@@ -1,4 +1,4 @@
-from backend.app.services.extract import extract_action_items, extract_hashtags
+from week5.backend.app.services.extract import extract_action_items, extract_hashtags
 
 
 def test_extract_action_items():

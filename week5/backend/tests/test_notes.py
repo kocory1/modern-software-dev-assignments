@@ -13,7 +13,7 @@ def test_create_and_list_notes(client):
     assert len(items) >= 1
 
     # Default search response shape and defaults
-    r = client.get("/notes/search/")
+    r = client.get("/notes/search")
     assert r.status_code == 200
     search = r.json()
     assert set(search.keys()) == {"items", "total", "page", "page_size"}
@@ -23,7 +23,7 @@ def test_create_and_list_notes(client):
     assert len(search["items"]) >= 1
 
     # Case-insensitive search by content
-    r = client.get("/notes/search/", params={"q": "hello"})
+    r = client.get("/notes/search", params={"q": "hello"})
     assert r.status_code == 200
     search = r.json()
     assert search["total"] >= 1
@@ -38,7 +38,7 @@ def test_search_case_insensitive(client):
     note_id = r.json()["id"]
 
     for q in ["hello", "HELLO", "bar", "BAR"]:
-        r = client.get("/notes/search/", params={"q": q})
+        r = client.get("/notes/search", params={"q": q})
         assert r.status_code == 200
         data = r.json()
         ids = [item["id"] for item in data["items"]]
@@ -52,7 +52,7 @@ def test_search_pagination(client):
         assert r.status_code == 201
 
     # page 1
-    r = client.get("/notes/search/", params={"page": 1, "page_size": 10})
+    r = client.get("/notes/search", params={"page": 1, "page_size": 10})
     assert r.status_code == 200
     page1 = r.json()
     assert page1["page"] == 1
@@ -61,7 +61,7 @@ def test_search_pagination(client):
     assert len(page1["items"]) == 10
 
     # page 2
-    r = client.get("/notes/search/", params={"page": 2, "page_size": 10})
+    r = client.get("/notes/search", params={"page": 2, "page_size": 10})
     assert r.status_code == 200
     page2 = r.json()
     assert page2["page"] == 2
@@ -70,7 +70,7 @@ def test_search_pagination(client):
     assert 1 <= len(page2["items"]) <= 10
 
     # out-of-range page
-    r = client.get("/notes/search/", params={"page": 3, "page_size": 10})
+    r = client.get("/notes/search", params={"page": 3, "page_size": 10})
     assert r.status_code == 200
     page3 = r.json()
     assert page3["page"] == 3
@@ -84,7 +84,7 @@ def test_search_sort_title_asc(client):
         r = client.post("/notes/", json={"title": title, "content": "x"})
         assert r.status_code == 201
 
-    r = client.get("/notes/search/", params={"sort": "title_asc", "page_size": 10})
+    r = client.get("/notes/search", params={"sort": "title_asc", "page_size": 10})
     assert r.status_code == 200
     data = r.json()
     returned_titles = [item["title"] for item in data["items"]]
@@ -102,7 +102,7 @@ def test_search_sort_invalid_defaults_to_created_desc(client):
 
     max_id = max(created_ids)
 
-    r = client.get("/notes/search/", params={"sort": "unknown", "page_size": 10})
+    r = client.get("/notes/search", params={"sort": "unknown", "page_size": 10})
     assert r.status_code == 200
     data = r.json()
     returned_ids = [item["id"] for item in data["items"]]
