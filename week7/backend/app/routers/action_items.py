@@ -5,7 +5,7 @@ from sqlalchemy import asc, desc, select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import ActionItem
+from ..models import ActionItem, Note
 from ..schemas import ActionItemCreate, ActionItemPatch, ActionItemRead
 
 router = APIRouter(prefix="/action-items", tags=["action_items"])
@@ -15,14 +15,19 @@ router = APIRouter(prefix="/action-items", tags=["action_items"])
 def list_items(
     db: Session = Depends(get_db),
     completed: Optional[bool] = None,
+    note_id: Optional[int] = Query(None, description="Filter by note ID"),
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Maximum number of records to return"),
     sort: str = Query("-created_at", description="Sort by field, prefix with - for desc"),
 ) -> list[ActionItemRead]:
     """List all action items with optional filtering, pagination, and sorting."""
     stmt = select(ActionItem)
+    
     if completed is not None:
         stmt = stmt.where(ActionItem.completed.is_(completed))
+    
+    if note_id is not None:
+        stmt = stmt.where(ActionItem.note_id == note_id)
 
     sort_field = sort.lstrip("-")
     order_fn = desc if sort.startswith("-") else asc
@@ -37,13 +42,29 @@ def list_items(
 
 @router.post("/", response_model=ActionItemRead, status_code=status.HTTP_201_CREATED)
 def create_item(payload: ActionItemCreate, db: Session = Depends(get_db)) -> ActionItemRead:
-    """Create a new action item."""
+    """Create a new action item with optional note association."""
     try:
-        item = ActionItem(description=payload.description, completed=False)
+        # Validate note if provided
+        if payload.note_id is not None:
+            note = db.get(Note, payload.note_id)
+            if not note:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail={"error_code": "NOT_FOUND", "message": f"Note with id {payload.note_id} not found"},
+                )
+        
+        item = ActionItem(
+            description=payload.description,
+            completed=False,
+            note_id=payload.note_id,
+        )
         db.add(item)
         db.commit()
         db.refresh(item)
         return ActionItemRead.model_validate(item)
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -102,9 +123,26 @@ def patch_item(item_id: int, payload: ActionItemPatch, db: Session = Depends(get
             item.description = payload.description
         if payload.completed is not None:
             item.completed = payload.completed
+        
+        # Update note_id if provided
+        if payload.note_id is not None:
+            if payload.note_id == 0:  # Allow setting to None with 0
+                item.note_id = None
+            else:
+                note = db.get(Note, payload.note_id)
+                if not note:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail={"error_code": "NOT_FOUND", "message": f"Note with id {payload.note_id} not found"},
+                    )
+                item.note_id = payload.note_id
+        
         db.commit()
         db.refresh(item)
         return ActionItemRead.model_validate(item)
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(
