@@ -48,98 +48,7 @@ def create_note(payload: NoteCreate, db: Session = Depends(get_db)) -> NoteRead:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create note: {str(e)}",
-            error_code="CREATE_ERROR",
-        )
-
-
-@router.patch("/{note_id}", response_model=NoteRead)
-def patch_note(note_id: int, payload: NotePatch, db: Session = Depends(get_db)) -> NoteRead:
-    """Partially update a note."""
-    note = db.get(Note, note_id)
-    if not note:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Note with id {note_id} not found",
-            error_code="NOT_FOUND",
-        )
-    
-    try:
-        if payload.title is not None:
-            note.title = payload.title
-        if payload.content is not None:
-            note.content = payload.content
-        db.commit()
-        db.refresh(note)
-        return NoteRead.model_validate(note)
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update note: {str(e)}",
-            error_code="UPDATE_ERROR",
-        )
-
-
-@router.get("/{note_id}", response_model=NoteRead)
-def get_note(note_id: int, db: Session = Depends(get_db)) -> NoteRead:
-    """Get a single note by ID."""
-    note = db.get(Note, note_id)
-    if not note:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Note with id {note_id} not found",
-            error_code="NOT_FOUND",
-        )
-    return NoteRead.model_validate(note)
-
-
-@router.put("/{note_id}", response_model=NoteRead)
-def update_note(note_id: int, payload: NoteCreate, db: Session = Depends(get_db)) -> NoteRead:
-    """Fully update a note (replace all fields)."""
-    note = db.get(Note, note_id)
-    if not note:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Note with id {note_id} not found",
-            error_code="NOT_FOUND",
-        )
-    
-    try:
-        note.title = payload.title
-        note.content = payload.content
-        db.commit()
-        db.refresh(note)
-        return NoteRead.model_validate(note)
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update note: {str(e)}",
-            error_code="UPDATE_ERROR",
-        )
-
-
-@router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_note(note_id: int, db: Session = Depends(get_db)) -> None:
-    """Delete a note by ID."""
-    note = db.get(Note, note_id)
-    if not note:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Note with id {note_id} not found",
-            error_code="NOT_FOUND",
-        )
-    
-    try:
-        db.delete(note)
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete note: {str(e)}",
-            error_code="DELETE_ERROR",
+            detail={"error_code": "CREATE_ERROR", "message": f"Failed to create note: {str(e)}"},
         )
 
 
@@ -165,5 +74,88 @@ def search_notes(
 
     rows = db.execute(stmt.offset(skip).limit(limit)).scalars().all()
     return [NoteRead.model_validate(row) for row in rows]
+
+
+@router.patch("/{note_id}", response_model=NoteRead)
+def patch_note(note_id: int, payload: NotePatch, db: Session = Depends(get_db)) -> NoteRead:
+    """Partially update a note."""
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "NOT_FOUND", "message": f"Note with id {note_id} not found"},
+        )
+    
+    try:
+        if payload.title is not None:
+            note.title = payload.title
+        if payload.content is not None:
+            note.content = payload.content
+        db.commit()
+        db.refresh(note)
+        return NoteRead.model_validate(note)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error_code": "UPDATE_ERROR", "message": f"Failed to update note: {str(e)}"},
+        )
+
+
+@router.get("/{note_id}", response_model=NoteRead)
+def get_note(note_id: int, db: Session = Depends(get_db)) -> NoteRead:
+    """Get a single note by ID."""
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "NOT_FOUND", "message": f"Note with id {note_id} not found"},
+        )
+    return NoteRead.model_validate(note)
+
+
+@router.put("/{note_id}", response_model=NoteRead)
+def update_note(note_id: int, payload: NoteCreate, db: Session = Depends(get_db)) -> NoteRead:
+    """Fully update a note (replace all fields)."""
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "NOT_FOUND", "message": f"Note with id {note_id} not found"},
+        )
+    
+    try:
+        note.title = payload.title
+        note.content = payload.content
+        db.commit()
+        db.refresh(note)
+        return NoteRead.model_validate(note)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error_code": "UPDATE_ERROR", "message": f"Failed to update note: {str(e)}"},
+        )
+
+
+@router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_note(note_id: int, db: Session = Depends(get_db)) -> None:
+    """Delete a note by ID."""
+    note = db.get(Note, note_id)
+    if not note:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "NOT_FOUND", "message": f"Note with id {note_id} not found"},
+        )
+    
+    try:
+        db.delete(note)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error_code": "DELETE_ERROR", "message": f"Failed to delete note: {str(e)}"},
+        )
 
 

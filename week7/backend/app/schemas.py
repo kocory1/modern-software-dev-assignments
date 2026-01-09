@@ -31,7 +31,7 @@ class NotePatch(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=200, description="Note title")
     content: str | None = Field(None, min_length=1, description="Note content")
 
-    @field_validator("title", "content", mode="before")
+    @field_validator("title", "content")
     @classmethod
     def validate_not_empty_if_provided(cls, v: str | None) -> str | None:
         """If provided, check that the string is not empty or only whitespace."""
@@ -69,7 +69,7 @@ class ActionItemPatch(BaseModel):
     description: str | None = Field(None, min_length=1, description="Action item description")
     completed: bool | None = None
 
-    @field_validator("description", mode="before")
+    @field_validator("description")
     @classmethod
     def validate_not_empty_if_provided(cls, v: str | None) -> str | None:
         """If provided, check that the string is not empty or only whitespace."""

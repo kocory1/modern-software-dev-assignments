@@ -48,8 +48,7 @@ def create_item(payload: ActionItemCreate, db: Session = Depends(get_db)) -> Act
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create action item: {str(e)}",
-            error_code="CREATE_ERROR",
+            detail={"error_code": "CREATE_ERROR", "message": f"Failed to create action item: {str(e)}"},
         )
 
 
@@ -60,8 +59,7 @@ def get_item(item_id: int, db: Session = Depends(get_db)) -> ActionItemRead:
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Action item with id {item_id} not found",
-            error_code="NOT_FOUND",
+            detail={"error_code": "NOT_FOUND", "message": f"Action item with id {item_id} not found"},
         )
     return ActionItemRead.model_validate(item)
 
@@ -73,8 +71,7 @@ def complete_item(item_id: int, db: Session = Depends(get_db)) -> ActionItemRead
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Action item with id {item_id} not found",
-            error_code="NOT_FOUND",
+            detail={"error_code": "NOT_FOUND", "message": f"Action item with id {item_id} not found"},
         )
     
     try:
@@ -86,8 +83,7 @@ def complete_item(item_id: int, db: Session = Depends(get_db)) -> ActionItemRead
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to complete action item: {str(e)}",
-            error_code="UPDATE_ERROR",
+            detail={"error_code": "UPDATE_ERROR", "message": f"Failed to complete action item: {str(e)}"},
         )
 
 
@@ -98,8 +94,7 @@ def patch_item(item_id: int, payload: ActionItemPatch, db: Session = Depends(get
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Action item with id {item_id} not found",
-            error_code="NOT_FOUND",
+            detail={"error_code": "NOT_FOUND", "message": f"Action item with id {item_id} not found"},
         )
     
     try:
@@ -114,8 +109,7 @@ def patch_item(item_id: int, payload: ActionItemPatch, db: Session = Depends(get
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update action item: {str(e)}",
-            error_code="UPDATE_ERROR",
+            detail={"error_code": "UPDATE_ERROR", "message": f"Failed to update action item: {str(e)}"},
         )
 
 
@@ -126,8 +120,7 @@ def delete_item(item_id: int, db: Session = Depends(get_db)) -> None:
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Action item with id {item_id} not found",
-            error_code="NOT_FOUND",
+            detail={"error_code": "NOT_FOUND", "message": f"Action item with id {item_id} not found"},
         )
     
     try:
@@ -137,8 +130,7 @@ def delete_item(item_id: int, db: Session = Depends(get_db)) -> None:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete action item: {str(e)}",
-            error_code="DELETE_ERROR",
+            detail={"error_code": "DELETE_ERROR", "message": f"Failed to delete action item: {str(e)}"},
         )
 
 
