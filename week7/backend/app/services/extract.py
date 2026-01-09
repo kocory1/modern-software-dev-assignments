@@ -28,13 +28,13 @@ def extract_action_items(text: str) -> list[str]:
     
     # Action verb phrases that indicate action items
     action_verb_patterns = [
-        r"^\s*(?:must|should|need to|remember to|ensure|make sure|consider|review)",
-        r"^\s*(?:implement|add|remove|update|fix|refactor|test|verify|check|confirm)",
-        r"^\s*(?:complete|finish|start|create|delete|modify|improve|optimize)",
-        r"^\s*(?:document|clarify|resolve|address|handle|process|validate)",
-        r"^\s*(?:deploy|rollback|merge|split|prioritize|schedule|assign)",
-        r"^\s*(?:notify|inform|contact|follow up|investigate|analyze)",
-        r"^\s*(?:evaluate|assess|monitor|track|log|debug|trace)",
+        r"^\s*(?:must|should|need to|remember to|ensure|make sure|consider|review)\b",
+        r"^\s*(?:implement|add|remove|update|fix|refactor|test|verify|check|confirm)\b",
+        r"^\s*(?:complete|finish|start|create|delete|modify|improve|optimize)\b",
+        r"^\s*(?:document|clarify|resolve|address|handle|process|validate)\b",
+        r"^\s*(?:deploy|rollback|merge|split|prioritize|schedule|assign)\b",
+        r"^\s*(?:notify|inform|contact|follow up|investigate|analyze)\b",
+        r"^\s*(?:evaluate|assess|monitor|track|log|debug|trace)\b",
     ]
     
     # Common imperative verbs (for capital-letter sentence start detection)
